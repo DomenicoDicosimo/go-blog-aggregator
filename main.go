@@ -17,12 +17,12 @@ type apiConfig struct {
 
 func main() {
 	godotenv.Load(".env")
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("PORT environment variable is not set")
 	}
 
-	godotenv.Load(".env")
 	dbURL := os.Getenv("DB")
 	if dbURL == "" {
 		log.Fatal("DB environment variable is not set")
@@ -43,7 +43,11 @@ func main() {
 	mux.HandleFunc("GET /v1/healthz", handlerReadiness)
 	mux.HandleFunc("GET /v1/error", handlerError)
 
-	mux.HandleFunc("POST /v1/users", apiConfig.handlerUsers)
+	mux.HandleFunc("POST /v1/users", apiConfig.handlerUsersCreate)
+	mux.HandleFunc("GET /v1/users", apiConfig.middlewareAuth(apiConfig.handlerUsersGet))
+
+	mux.HandleFunc("POST /v1/feeds", apiConfig.middlewareAuth(apiConfig.handlerFeedsCreate))
+	mux.HandleFunc("GET /v1/feeds", apiConfig.handlerFeedsGet)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
