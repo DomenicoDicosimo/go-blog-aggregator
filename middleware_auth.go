@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/auth"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database/auth"
 )
 
 type authedHandler func(http.ResponseWriter, *http.Request, database.User)
