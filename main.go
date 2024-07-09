@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/joho/godotenv"
@@ -53,10 +54,16 @@ func main() {
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", apiConfig.middlewareAuth(apiConfig.handlerFeedFollowsDelete))
 	mux.HandleFunc("GET /v1/feed_follows", apiConfig.middlewareAuth(apiConfig.handlerFeedFollowsGet))
 
+	mux.HandleFunc("GET /v1/posts", apiConfig.middlewareAuth(apiConfig.handlerPostsGet))
+
 	srv := &http.Server{
 		Addr:    ":" + port,
 		Handler: mux,
 	}
+
+	const collectionConcurrency = 10
+	const collectionInterval = time.Minute
+	go startScraping(dbQueries, collectionConcurrency, collectionInterval)
 
 	log.Fatal(srv.ListenAndServe())
 }
