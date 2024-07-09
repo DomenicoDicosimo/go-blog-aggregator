@@ -60,5 +60,5 @@ func (cfg *apiConfig) handlerFeedFollowsGet(w http.ResponseWriter, r *http.Reque
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get feeds")
 	}
 
-	respondWithJSON(w, http.StatusOK, feedFollows)
+	respondWithJSON(w, http.StatusOK, databaseFeedFollowsToFeedFollows(feedFollows))
 }

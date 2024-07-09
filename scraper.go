@@ -48,7 +48,7 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 		return
 	}
 
-	layout := "2006-01-02 15:04:05"
+	layout := time.RFC1123
 	for _, item := range feedData.Channel.Item {
 		parsedTime, err := time.Parse(layout, item.PubDate)
 		if err != nil {

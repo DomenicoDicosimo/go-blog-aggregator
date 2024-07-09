@@ -26,5 +26,5 @@ func (cfg *apiConfig) handlerPostsGet(w http.ResponseWriter, r *http.Request, us
 		respondWithError(w, http.StatusInternalServerError, "Couldn't retrieve posts")
 	}
 
-	respondWithJSON(w, http.StatusOK, posts)
+	respondWithJSON(w, http.StatusOK, databasePostsToPosts(posts))
 }
