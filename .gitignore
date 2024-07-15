@@ -1,1 +1,4 @@
-*.env
+out
+.env
+out
+go-blog-aggregator
