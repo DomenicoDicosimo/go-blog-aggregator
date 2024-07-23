@@ -1,4 +1,4 @@
-package main
+package scraper
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func startScraping(db *database.Queries, concurrency int, timeBetweenRequest time.Duration) {
+func StartScraping(db *database.Queries, concurrency int, timeBetweenRequest time.Duration) {
 	log.Printf("Collecting feeds every %s on %v goroutines...", timeBetweenRequest, concurrency)
 	ticker := time.NewTicker(timeBetweenRequest)
 
@@ -28,13 +28,13 @@ func startScraping(db *database.Queries, concurrency int, timeBetweenRequest tim
 		wg := &sync.WaitGroup{}
 		for _, feed := range feeds {
 			wg.Add(1)
-			go scrapeFeed(db, wg, feed)
+			go ScrapeFeed(db, wg, feed)
 		}
 		wg.Wait()
 	}
 }
 
-func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
+func ScrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 	defer wg.Done()
 	err := db.MarkFeedFetched(context.Background(), feed.ID)
 	if err != nil {
@@ -42,7 +42,7 @@ func scrapeFeed(db *database.Queries, wg *sync.WaitGroup, feed database.Feed) {
 		return
 	}
 
-	feedData, err := fetchFeed(feed.Url)
+	feedData, err := FetchFeed(feed.Url)
 	if err != nil {
 		log.Printf("Couldn't collect feed %s: %v", feed.Name, err)
 		return
@@ -85,7 +85,7 @@ type RSSItem struct {
 	PubDate     string `xml:"pubDate"`
 }
 
-func fetchFeed(feedURL string) (*RSSFeed, error) {
+func FetchFeed(feedURL string) (*RSSFeed, error) {
 	httpClient := http.Client{
 		Timeout: 10 * time.Second,
 	}

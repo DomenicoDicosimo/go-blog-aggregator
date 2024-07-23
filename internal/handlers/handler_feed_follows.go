@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) handlerFeedFollowsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *APIConfig) HandlerFeedFollowsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		FeedID uuid.UUID `json:"feed_id"`
 	}
@@ -34,10 +35,10 @@ func (cfg *apiConfig) handlerFeedFollowsCreate(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, databaseFeedFollowToFeedFollow(feed_follow))
+	respondWithJSON(w, http.StatusOK, models.DatabaseFeedFollowToFeedFollow(feed_follow))
 }
 
-func (cfg *apiConfig) handlerFeedFollowsDelete(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *APIConfig) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.Request, user database.User) {
 
 	feedIDString := r.PathValue("feedFollowID")
 	feedID, err := uuid.Parse(feedIDString)
@@ -54,11 +55,11 @@ func (cfg *apiConfig) handlerFeedFollowsDelete(w http.ResponseWriter, r *http.Re
 	respondWithJSON(w, http.StatusOK, "Feed follow deleted")
 }
 
-func (cfg *apiConfig) handlerFeedFollowsGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *APIConfig) HandlerFeedFollowsGet(w http.ResponseWriter, r *http.Request, user database.User) {
 	feedFollows, err := cfg.DB.GetFeedFollows(r.Context(), user.ID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get feeds")
 	}
 
-	respondWithJSON(w, http.StatusOK, databaseFeedFollowsToFeedFollows(feedFollows))
+	respondWithJSON(w, http.StatusOK, models.DatabaseFeedFollowsToFeedFollows(feedFollows))
 }

@@ -1,13 +1,14 @@
-package main
+package handlers
 
 import (
 	"net/http"
 	"strconv"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
 )
 
-func (cfg *apiConfig) handlerPostsGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *APIConfig) HandlerPostsGet(w http.ResponseWriter, r *http.Request, user database.User) {
 
 	limitString := r.URL.Query().Get("limit")
 	if limitString == "" {
@@ -26,5 +27,5 @@ func (cfg *apiConfig) handlerPostsGet(w http.ResponseWriter, r *http.Request, us
 		respondWithError(w, http.StatusInternalServerError, "Couldn't retrieve posts")
 	}
 
-	respondWithJSON(w, http.StatusOK, databasePostsToPosts(posts))
+	respondWithJSON(w, http.StatusOK, models.DatabasePostsToPosts(posts))
 }

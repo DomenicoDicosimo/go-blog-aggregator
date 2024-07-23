@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"time"
@@ -43,7 +43,7 @@ type Post struct {
 	FeedID      uuid.UUID `json:"feedid"`
 }
 
-func databaseUserToUser(user database.User) User {
+func DatabaseUserToUser(user database.User) User {
 	return User{
 		ID:        user.ID,
 		CreatedAt: user.CreatedAt,
@@ -52,7 +52,7 @@ func databaseUserToUser(user database.User) User {
 	}
 }
 
-func databaseFeedToFeed(feed database.Feed) Feed {
+func DatabaseFeedToFeed(feed database.Feed) Feed {
 	var lastFetchedAt *time.Time
 	if feed.LastFetchedAt.Valid {
 		lastFetchedAt = &feed.LastFetchedAt.Time
@@ -68,15 +68,15 @@ func databaseFeedToFeed(feed database.Feed) Feed {
 	}
 }
 
-func databaseFeedsToFeeds(feeds []database.Feed) []Feed {
+func DatabaseFeedsToFeeds(feeds []database.Feed) []Feed {
 	result := make([]Feed, len(feeds))
 	for i, feed := range feeds {
-		result[i] = databaseFeedToFeed(feed)
+		result[i] = DatabaseFeedToFeed(feed)
 	}
 	return result
 }
 
-func databaseFeedFollowToFeedFollow(feed_follow database.FeedFollow) FeedFollow {
+func DatabaseFeedFollowToFeedFollow(feed_follow database.FeedFollow) FeedFollow {
 	return FeedFollow{
 		ID:        feed_follow.ID,
 		CreatedAt: feed_follow.CreatedAt,
@@ -86,15 +86,15 @@ func databaseFeedFollowToFeedFollow(feed_follow database.FeedFollow) FeedFollow 
 	}
 }
 
-func databaseFeedFollowsToFeedFollows(feedFollows []database.FeedFollow) []FeedFollow {
+func DatabaseFeedFollowsToFeedFollows(feedFollows []database.FeedFollow) []FeedFollow {
 	result := make([]FeedFollow, len(feedFollows))
 	for i, feedFollow := range feedFollows {
-		result[i] = databaseFeedFollowToFeedFollow(feedFollow)
+		result[i] = DatabaseFeedFollowToFeedFollow(feedFollow)
 	}
 	return result
 }
 
-func databasePostToPost(post database.Post) Post {
+func DatabasePostToPost(post database.Post) Post {
 	return Post{
 		ID:          post.ID,
 		CreatedAt:   post.CreatedAt,
@@ -107,10 +107,10 @@ func databasePostToPost(post database.Post) Post {
 	}
 }
 
-func databasePostsToPosts(posts []database.Post) []Post {
+func DatabasePostsToPosts(posts []database.Post) []Post {
 	result := make([]Post, len(posts))
 	for i, post := range posts {
-		result[i] = databasePostToPost(post)
+		result[i] = DatabasePostToPost(post)
 	}
 	return result
 }

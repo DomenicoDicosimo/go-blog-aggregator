@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 
 type authedHandler func(http.ResponseWriter, *http.Request, database.User)
 
-func (cfg *apiConfig) middlewareAuth(handler authedHandler) http.HandlerFunc {
+func (cfg *APIConfig) MiddlewareAuth(handler authedHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Extract API key
 		apiKey, err := auth.GetBearerToken(r.Header)

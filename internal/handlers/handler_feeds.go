@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
+
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) handlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
 		Url  string `json:"url"`
@@ -49,21 +51,21 @@ func (cfg *apiConfig) handlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 	}
 
 	response := struct {
-		Feed       Feed       `json:"feed"`
-		FeedFollow FeedFollow `json:"feed_follow"`
+		Feed       models.Feed       `json:"feed"`
+		FeedFollow models.FeedFollow `json:"feed_follow"`
 	}{
-		Feed:       databaseFeedToFeed(feed),
-		FeedFollow: databaseFeedFollowToFeedFollow(feedFollow),
+		Feed:       models.DatabaseFeedToFeed(feed),
+		FeedFollow: models.DatabaseFeedFollowToFeedFollow(feedFollow),
 	}
 
 	respondWithJSON(w, http.StatusOK, response)
 }
 
-func (cfg *apiConfig) handlerFeedsGet(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerFeedsGet(w http.ResponseWriter, r *http.Request) {
 	feeds, err := cfg.DB.GetFeeds(r.Context())
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get feeds")
 	}
 
-	respondWithJSON(w, http.StatusOK, databaseFeedsToFeeds(feeds))
+	respondWithJSON(w, http.StatusOK, models.DatabaseFeedsToFeeds(feeds))
 }

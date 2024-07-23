@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
 	"github.com/google/uuid"
 )
 
-func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request) {
+func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Name string `json:"name"`
 	}
@@ -33,9 +34,9 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
+	respondWithJSON(w, http.StatusOK, models.DatabaseUserToUser(user))
 }
 
-func (cfg *apiConfig) handlerUsersGet(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
+func (cfg *APIConfig) HandlerUsersGet(w http.ResponseWriter, r *http.Request, user database.User) {
+	respondWithJSON(w, http.StatusOK, models.DatabaseUserToUser(user))
 }
