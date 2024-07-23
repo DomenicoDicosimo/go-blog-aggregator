@@ -7,14 +7,13 @@ import (
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
-
 	"github.com/google/uuid"
 )
 
 func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
-		Name string `json:"name"`
-		Url  string `json:"url"`
+		Name string `json:"name" validate:"required,min=2,max=100"`
+		Url  string `json:"url" validate:"required,url"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -22,6 +21,12 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
+		return
+	}
+
+	err = validate.Struct(params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid input parameters")
 		return
 	}
 

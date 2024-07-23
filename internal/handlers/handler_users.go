@@ -12,7 +12,7 @@ import (
 
 func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Name string `json:"name"`
+		Name string `json:"name" validate:"required,min=2,max=100"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -20,6 +20,12 @@ func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request)
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
+		return
+	}
+
+	err = validate.Struct(params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid input parameters")
 		return
 	}
 
