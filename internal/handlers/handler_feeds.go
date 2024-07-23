@@ -10,21 +10,26 @@ import (
 	"github.com/google/uuid"
 )
 
+type feedParameters struct {
+	Name string `json:"name" validate:"required,min=2,max=100"`
+	URL  string `json:"url" validate:"required,url"`
+}
+
+func validateFeedParams(params feedParameters) error {
+	return validate.Struct(params)
+}
+
 func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
-	type parameters struct {
-		Name string `json:"name" validate:"required,min=2,max=100"`
-		Url  string `json:"url" validate:"required,url"`
-	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
+	params := feedParameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
 		return
 	}
 
-	err = validate.Struct(params)
+	err = validateFeedParams(params)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid input parameters")
 		return
@@ -35,7 +40,7 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
-		Url:       params.Url,
+		Url:       params.URL,
 		UserID:    user.ID,
 	})
 	if err != nil {

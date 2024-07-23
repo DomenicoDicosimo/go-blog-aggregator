@@ -10,20 +10,25 @@ import (
 	"github.com/google/uuid"
 )
 
+type userParameters struct {
+	Name string `json:"name" validate:"required,min=2,max=100"`
+}
+
+func validateUserParams(params userParameters) error {
+	return validate.Struct(params)
+}
+
 func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request) {
-	type parameters struct {
-		Name string `json:"name" validate:"required,min=2,max=100"`
-	}
 
 	decoder := json.NewDecoder(r.Body)
-	params := parameters{}
+	params := userParameters{}
 	err := decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
 		return
 	}
 
-	err = validate.Struct(params)
+	err = validateUserParams(params)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid input parameters")
 		return
