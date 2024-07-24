@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/DomenicoDicosimo/go-blog-aggregator/handlers"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/handlers"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/pkg/scraper"
 
 	"github.com/joho/godotenv"
