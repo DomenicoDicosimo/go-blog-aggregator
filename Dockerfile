@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine
+FROM golang:1.22-alpine
 
 WORKDIR /app
 
@@ -14,8 +14,7 @@ COPY . .
 # Build the application
 RUN go build -o main ./cmd/api
 
-# Copy the migration script
-COPY run-migrations.sh /app/scripts/run-migrations.sh
+# Run the migration script
 RUN chmod +x /app/scripts/run-migrations.sh
 
 CMD ["/bin/sh", "-c", "./scripts/run-migrations.sh && ./main"]
