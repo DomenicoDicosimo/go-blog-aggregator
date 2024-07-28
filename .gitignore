@@ -2,3 +2,6 @@ out
 .env
 out
 go-blog-aggregator
+postgres_data/
+*.log
+api
