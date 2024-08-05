@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DomenicoDicosimo/go-blog-aggregator/handlers"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
@@ -93,14 +92,14 @@ func (suite *APITestSuite) SetupSuite() {
 }
 
 func (suite *APITestSuite) setupTestServer() {
-	apiConfig := handlers.APIConfig{
+	apiConfig := APIConfig{
 		DB: suite.queries,
 	}
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /v1/healthz", handlers.HandlerReadiness)
-	mux.HandleFunc("GET /v1/error", handlers.HandlerError)
+	mux.HandleFunc("GET /v1/healthz", HandlerReadiness)
+	mux.HandleFunc("GET /v1/error", HandlerError)
 
 	mux.HandleFunc("POST /v1/users", apiConfig.HandlerUsersCreate)
 	mux.HandleFunc("GET /v1/users", apiConfig.MiddlewareAuth(apiConfig.HandlerUsersGet))

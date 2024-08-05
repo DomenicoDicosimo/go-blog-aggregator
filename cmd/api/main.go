@@ -7,13 +7,16 @@ import (
 	"os"
 	"time"
 
-	"github.com/DomenicoDicosimo/go-blog-aggregator/handlers"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/pkg/scraper"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
+
+type APIConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	godotenv.Load(".env")
@@ -34,14 +37,14 @@ func main() {
 	}
 	dbQueries := database.New(db)
 
-	apiConfig := handlers.APIConfig{
+	apiConfig := APIConfig{
 		DB: dbQueries,
 	}
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /v1/healthz", handlers.HandlerReadiness)
-	mux.HandleFunc("GET /v1/error", handlers.HandlerError)
+	mux.HandleFunc("GET /v1/healthz", HandlerReadiness)
+	mux.HandleFunc("GET /v1/error", HandlerError)
 
 	mux.HandleFunc("POST /v1/users", apiConfig.HandlerUsersCreate)
 	mux.HandleFunc("GET /v1/users", apiConfig.MiddlewareAuth(apiConfig.HandlerUsersGet))
