@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/data"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
 	"github.com/google/uuid"
 )
 
@@ -35,7 +35,7 @@ func (cfg *APIConfig) HandlerFeedFollowsCreate(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, models.DatabaseFeedFollowToFeedFollow(feed_follow))
+	respondWithJSON(w, http.StatusOK, data.DatabaseFeedFollowToFeedFollow(feed_follow))
 }
 
 func (cfg *APIConfig) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -61,5 +61,5 @@ func (cfg *APIConfig) HandlerFeedFollowsGet(w http.ResponseWriter, r *http.Reque
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get feeds")
 	}
 
-	respondWithJSON(w, http.StatusOK, models.DatabaseFeedFollowsToFeedFollows(feedFollows))
+	respondWithJSON(w, http.StatusOK, data.DatabaseFeedFollowsToFeedFollows(feedFollows))
 }

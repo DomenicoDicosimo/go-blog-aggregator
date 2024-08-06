@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/data"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
 	"github.com/google/uuid"
 )
 
@@ -61,11 +61,11 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 	}
 
 	response := struct {
-		Feed       models.Feed       `json:"feed"`
-		FeedFollow models.FeedFollow `json:"feed_follow"`
+		Feed       data.Feed       `json:"feed"`
+		FeedFollow data.FeedFollow `json:"feed_follow"`
 	}{
-		Feed:       models.DatabaseFeedToFeed(feed),
-		FeedFollow: models.DatabaseFeedFollowToFeedFollow(feedFollow),
+		Feed:       data.DatabaseFeedToFeed(feed),
+		FeedFollow: data.DatabaseFeedFollowToFeedFollow(feedFollow),
 	}
 
 	respondWithJSON(w, http.StatusOK, response)
@@ -77,5 +77,5 @@ func (cfg *APIConfig) HandlerFeedsGet(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get feeds")
 	}
 
-	respondWithJSON(w, http.StatusOK, models.DatabaseFeedsToFeeds(feeds))
+	respondWithJSON(w, http.StatusOK, data.DatabaseFeedsToFeeds(feeds))
 }

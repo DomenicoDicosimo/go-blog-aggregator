@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/data"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/models"
 	"github.com/google/uuid"
 )
 
@@ -45,9 +45,9 @@ func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, models.DatabaseUserToUser(user))
+	respondWithJSON(w, http.StatusOK, data.DatabaseUserToUser(user))
 }
 
 func (cfg *APIConfig) HandlerUsersGet(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJSON(w, http.StatusOK, models.DatabaseUserToUser(user))
+	respondWithJSON(w, http.StatusOK, data.DatabaseUserToUser(user))
 }
