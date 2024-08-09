@@ -11,19 +11,25 @@ type User struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Password  password  `json:"-"`
+	Name      string    `json:"name" validate:"required,max=500"`
+	Email     string    `json:"email" validate:"required,email"`
+	Password  password  `json:"-" validate:"required"`
 	Activated bool      `json:"activated"`
 	Version   int       `json:"-"`
 }
 
-func DatabaseUserToUser(user database.User) User {
+func DatabaseUserToUser(dbUser database.User) User {
 	return User{
-		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Name:      user.Name,
+		ID:        dbUser.ID,
+		CreatedAt: dbUser.CreatedAt,
+		UpdatedAt: dbUser.UpdatedAt,
+		Name:      dbUser.Name,
+		Email:     dbUser.Email,
+		Password: password{
+			hash: dbUser.PasswordHash,
+		},
+		Activated: dbUser.Activated,
+		Version:   dbUser.Version,
 	}
 }
 
