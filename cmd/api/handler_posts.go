@@ -19,7 +19,7 @@ func (cfg *APIConfig) HandlerPostsGet(w http.ResponseWriter, r *http.Request, us
 		respondWithError(w, http.StatusInternalServerError, "Invalid limit value")
 	}
 
-	posts, err := cfg.DB.GetPostsByUser(r.Context(), database.GetPostsByUserParams{
+	posts, err := cfg.DB.GetPostsForUser(r.Context(), database.GetPostsForUserParams{
 		UserID: user.ID,
 		Limit:  int32(limit),
 	})

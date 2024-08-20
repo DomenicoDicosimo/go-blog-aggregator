@@ -7,31 +7,27 @@ import (
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/data"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/validator"
 	"github.com/google/uuid"
 )
 
-type feedParameters struct {
-	Name string `json:"name" validate:"required,min=2,max=100"`
-	URL  string `json:"url" validate:"required,url"`
-}
-
-func validateFeedParams(params feedParameters) error {
-	return validate.Struct(params)
-}
-
 func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 
-	decoder := json.NewDecoder(r.Body)
-	params := feedParameters{}
-	err := decoder.Decode(&params)
+	var input struct {
+		Name string `json:"name" validate:"required,min=2,max=100"`
+		URL  string `json:"url" validate:"required,url"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
 		return
 	}
 
-	err = validateFeedParams(params)
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid input parameters")
+	v := validator.New()
+	v.ValidateStruct(input)
+	if !v.Valid() {
+		respondWithJSON(w, http.StatusUnprocessableEntity, v.Errors)
 		return
 	}
 
@@ -39,8 +35,8 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		Name:      params.Name,
-		Url:       params.URL,
+		Name:      input.Name,
+		Url:       input.URL,
 		UserID:    user.ID,
 	})
 	if err != nil {

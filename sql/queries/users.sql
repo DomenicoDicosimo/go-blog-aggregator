@@ -10,10 +10,10 @@ VALUES (
   $7, -- activated
   1  -- version (default to 1 for new users)
 )
-RETURNING id, created_at, version;
+RETURNING *;
 
 -- name: GetUserByEmail :one
-SELECT id, created_at, name, email, password_hash, activated, version
+SELECT id, created_at, updated_at, name, email, password_hash, activated, version
 FROM users
 WHERE email = $1;
 

@@ -7,54 +7,57 @@ import (
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/data"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/validator"
 	"github.com/google/uuid"
 )
 
 func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
-        Name     string `json:"name"`
-        Email    string `json:"email"`
-        Password string `json:"password"`
-    }
-	
+		Name     string `json:"name" validate:"required,max=500"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"-" validate:"required"`
+	}
+
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
 		return
 	}
 
+	v := validator.New()
+	v.ValidateStruct(input)
+	if !v.Valid() {
+		respondWithJSON(w, http.StatusUnprocessableEntity, v.Errors)
+		return
+	}
+
 	user := &data.User{
-        Name:  input.Name,
-        Email: input.Email,
-    }
-
-    err = user.Password.Set(input.Password)
-    if err != nil {
-        respondWithError(w, http.StatusInternalServerError, "Couldn't set password")
-        return
-    }
-
-    v := validator.New()
-    v.ValidateStruct(user)
-    if !v.Valid() {
-        respondWithError(w, http.StatusInternalServerError, v.Errors)
-        return
-    }
-
-	dbUser, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		Name:      params.Name,
-		Email: params.Email,
+		Name:      input.Name,
+		Email:     input.Email,
 		Activated: false,
-	})
+		Version:   1,
+	}
+
+	err = user.Password.Set(input.Password)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Could't create user")
+		respondWithError(w, http.StatusInternalServerError, "Error setting password")
 		return
 	}
-	
+
+	dbUser, err := cfg.DB.InsertUser(r.Context(), database.InsertUserParams{
+		ID:           user.ID,
+		CreatedAt:    user.CreatedAt,
+		UpdatedAt:    user.UpdatedAt,
+		Name:         user.Name,
+		Email:        user.Email,
+		PasswordHash: user.GetPasswordHash(),
+		Activated:    user.Activated,
+	})
+
 	respondWithJSON(w, http.StatusOK, data.DatabaseUserToUser(dbUser))
 }
 

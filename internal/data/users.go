@@ -1,21 +1,23 @@
 package data
 
 import (
+	"errors"
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Name      string    `json:"name" validate:"required,max=500"`
-	Email     string    `json:"email" validate:"required,email"`
-	Password  password  `json:"-" validate:"required"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Password  password  `json:"-"`
 	Activated bool      `json:"activated"`
-	Version   int       `json:"-"`
+	Version   int32     `json:"-"`
 }
 
 func DatabaseUserToUser(dbUser database.User) User {
@@ -33,29 +35,34 @@ func DatabaseUserToUser(dbUser database.User) User {
 	}
 }
 
-type password struct{
+type password struct {
 	plaintext *string
-	hash []byte
+	hash      []byte
 }
 
 func (p *password) Set(plaintextPassword string) error {
-	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12) 
+	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
 	if err != nil {
-		return err 
+		return err
 	}
-	p.plaintext = &plaintextPassword 
+	p.plaintext = &plaintextPassword
 	p.hash = hash
 	return nil
 }
 
+func (u *User) GetPasswordHash() []byte {
+	return u.Password.hash
+}
+
 func (p *password) Matches(plaintextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword)) 
+	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
-			return false, nil 
+			return false, nil
 		default:
-			return false, err }
+			return false, err
+		}
 	}
-	return true, nil 
+	return true, nil
 }
