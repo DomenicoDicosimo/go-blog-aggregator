@@ -1,12 +1,6 @@
 package main
 
-import (
-	"net/http"
-
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/auth"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-)
-
+/*
 type authedHandler func(http.ResponseWriter, *http.Request, database.User)
 
 func (cfg *APIConfig) MiddlewareAuth(handler authedHandler) http.HandlerFunc {
@@ -29,3 +23,4 @@ func (cfg *APIConfig) MiddlewareAuth(handler authedHandler) http.HandlerFunc {
 		handler(w, r, user)
 	}
 }
+*/

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -56,6 +57,13 @@ func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		Email:        user.Email,
 		PasswordHash: user.GetPasswordHash(),
 		Activated:    user.Activated,
+	})
+
+	background(func() {
+		err = cfg.Mailer.Send(user.Email, "user_welcome.tmpl", user)
+		if err != nil {
+			log.Printf("%v", err)
+		}
 	})
 
 	respondWithJSON(w, http.StatusOK, data.DatabaseUserToUser(dbUser))

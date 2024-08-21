@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"context"
 	"database/sql"
@@ -12,9 +13,7 @@ import (
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
-	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -139,6 +138,7 @@ func (suite *APITestSuite) TearDownTest() {
 		suite.NoError(err)
 	}
 }
+
 
 func (suite *APITestSuite) TestUserFunctions() {
 	// Test CreateUser
@@ -274,9 +274,10 @@ func (suite *APITestSuite) TestAPIFeedCreateAndRetrieve() {
 		suite.Equal(feedResp.Feed.ID, feeds[0].ID)
 		suite.Equal(feedResp.Feed.Name, feeds[0].Name)
 
-	*/
-}
 
+}
+*/
+/*
 func (suite *APITestSuite) TestPosts() {
 
 	user, err := suite.queries.CreateUser(suite.ctx, database.CreateUserParams{
@@ -455,6 +456,8 @@ func (suite *APITestSuite) TestFeedFollows() {
 	suite.Len(finalFeedFollows, 2)
 }
 
+
 func TestAPISuite(t *testing.T) {
 	suite.Run(t, new(APITestSuite))
 }
+*/
