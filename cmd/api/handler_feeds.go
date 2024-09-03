@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -11,27 +10,27 @@ import (
 	"github.com/google/uuid"
 )
 
-func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 
 	var input struct {
 		Name string `json:"name" validate:"required,min=2,max=100"`
 		URL  string `json:"url" validate:"required,url"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err := app.readJSON(w, r, &input)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	v := validator.New()
 	v.ValidateStruct(input)
 	if !v.Valid() {
-		respondWithJSON(w, http.StatusUnprocessableEntity, v.Errors)
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	feed, err := cfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
+	feed, err := app.db.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
@@ -40,11 +39,11 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 		UserID:    user.ID,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Could't create feed")
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	feedFollow, err := cfg.DB.CreateFeedFollow(r.Context(), database.CreateFeedFollowParams{
+	feedFollow, err := app.db.CreateFeedFollow(r.Context(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
@@ -52,7 +51,7 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 		FeedID:    feed.ID,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Could't create ")
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
@@ -64,14 +63,18 @@ func (cfg *APIConfig) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 		FeedFollow: data.DatabaseFeedFollowToFeedFollow(feedFollow),
 	}
 
-	respondWithJSON(w, http.StatusOK, response)
+	err = app.writeJSON(w, http.StatusOK, envelope{"Feed": response}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }
 
-func (cfg *APIConfig) HandlerFeedsGet(w http.ResponseWriter, r *http.Request) {
-	feeds, err := cfg.DB.GetFeeds(r.Context())
+func (app *application) HandlerFeedsGet(w http.ResponseWriter, r *http.Request) {
+	feeds, err := app.db.GetFeeds(r.Context())
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't get feeds")
+		app.serverErrorResponse(w, r, err)
 	}
 
-	respondWithJSON(w, http.StatusOK, data.DatabaseFeedsToFeeds(feeds))
+	err = app.writeJSON(w, http.StatusOK, envelope{"Feeds": data.DatabaseFeedsToFeeds(feeds)}, nil)
 }

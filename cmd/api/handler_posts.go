@@ -8,7 +8,7 @@ import (
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 )
 
-func (cfg *APIConfig) HandlerPostsGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerPostsGet(w http.ResponseWriter, r *http.Request, user database.User) {
 
 	limitString := r.URL.Query().Get("limit")
 	if limitString == "" {
@@ -16,16 +16,16 @@ func (cfg *APIConfig) HandlerPostsGet(w http.ResponseWriter, r *http.Request, us
 	}
 	limit, err := strconv.Atoi(limitString)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Invalid limit value")
+		app.serverErrorResponse(w, r, err)
 	}
 
-	posts, err := cfg.DB.GetPostsForUser(r.Context(), database.GetPostsForUserParams{
+	posts, err := app.db.GetPostsForUser(r.Context(), database.GetPostsForUserParams{
 		UserID: user.ID,
 		Limit:  int32(limit),
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't retrieve posts")
+		app.serverErrorResponse(w, r, err)
 	}
 
-	respondWithJSON(w, http.StatusOK, data.DatabasePostsToPosts(posts))
+	err = app.writeJSON(w, http.StatusOK, envelope{"Posts": data.DatabasePostsToPosts(posts)}, nil)
 }

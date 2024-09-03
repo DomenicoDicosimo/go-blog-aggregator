@@ -3,9 +3,10 @@ package main
 import (
 	"database/sql"
 	"log"
-	"net/http"
+	"log/slog"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
@@ -16,13 +17,37 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type APIConfig struct {
-	DB     *database.Queries
-	Mailer mailer.Mailer
+type config struct {
+	port    int
+	env     string
+	limiter struct {
+		enabled bool
+		rps     float64
+		burst   int
+	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
+}
+
+type application struct {
+	config config
+	db     *database.Queries
+	mailer mailer.Mailer
+	logger *slog.Logger
+	wg     sync.WaitGroup
 }
 
 func main() {
+	var cfg config
+
 	godotenv.Load(".env")
+
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -68,35 +93,24 @@ func main() {
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatal("Problem connecting to database")
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
+	defer db.Close()
+
 	dbQueries := database.New(db)
 
-	apiConfig := APIConfig{
-		DB:     dbQueries,
-		Mailer: mailerClient,
+	app := &application{
+		config: cfg,
+		db:     dbQueries,
+		mailer: mailerClient,
+		logger: logger,
 	}
 
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("GET /v1/healthz", HandlerReadiness)
-	mux.HandleFunc("GET /v1/error", HandlerError)
-
-	mux.HandleFunc("POST /v1/users", apiConfig.HandlerUsersCreate)
-	mux.HandleFunc("GET /v1/users", apiConfig.MiddlewareAuth(apiConfig.HandlerUsersGet))
-
-	mux.HandleFunc("POST /v1/feeds", apiConfig.MiddlewareAuth(apiConfig.HandlerFeedsCreate))
-	mux.HandleFunc("GET /v1/feeds", apiConfig.HandlerFeedsGet)
-
-	mux.HandleFunc("POST /v1/feed_follows", apiConfig.MiddlewareAuth(apiConfig.HandlerFeedFollowsCreate))
-	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", apiConfig.MiddlewareAuth(apiConfig.HandlerFeedFollowsDelete))
-	mux.HandleFunc("GET /v1/feed_follows", apiConfig.MiddlewareAuth(apiConfig.HandlerFeedFollowsGet))
-
-	mux.HandleFunc("GET /v1/posts", apiConfig.MiddlewareAuth(apiConfig.HandlerPostsGet))
-
-	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: mux,
+	err = app.serve()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
 	const (
@@ -104,6 +118,4 @@ func main() {
 		collectionInterval    = time.Minute
 	)
 	go scraper.StartScraping(dbQueries, collectionConcurrency, collectionInterval)
-
-	log.Fatal(srv.ListenAndServe())
 }

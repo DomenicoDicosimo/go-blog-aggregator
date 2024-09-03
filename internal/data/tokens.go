@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base32"
@@ -22,6 +23,33 @@ type Token struct {
 	Scope     string
 }
 
+func DatabaseTokenToToken(dbToken database.Token) Token {
+	return Token{
+		Hash:   dbToken.Hash,
+		UserID: dbToken.UserID,
+		Expiry: dbToken.Expiry,
+		Scope:  dbToken.Scope,
+	}
+}
+
+func New(ctx context.Context, userID uuid.UUID, ttl time.Duration, scope string, db *database.Queries) (*Token, error) {
+	token, err := generateToken(userID, ttl, scope)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.InsertToken(ctx, database.InsertTokenParams{
+		Hash:   token.Hash,
+		UserID: token.UserID,
+		Expiry: token.Expiry,
+		Scope:  token.Scope,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
 func generateToken(userID uuid.UUID, ttl time.Duration, scope string) (*Token, error) {
 	token := &Token{
 		UserID: userID,
@@ -30,7 +58,6 @@ func generateToken(userID uuid.UUID, ttl time.Duration, scope string) (*Token, e
 	}
 
 	randomBytes := make([]byte, 16)
-
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		return nil, err
@@ -42,13 +69,4 @@ func generateToken(userID uuid.UUID, ttl time.Duration, scope string) (*Token, e
 	token.Hash = hash[:]
 
 	return token, nil
-}
-
-func DatabaseTokenToToken(dbToken database.Token) Token {
-	return Token{
-		Hash:   dbToken.Hash,
-		UserID: dbToken.UserID,
-		Expiry: dbToken.Expiry,
-		Scope:  dbToken.Scope,
-	}
 }

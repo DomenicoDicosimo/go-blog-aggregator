@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		Name     string `json:"name" validate:"required,max=500"`
@@ -20,16 +18,16 @@ func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		Password string `json:"-" validate:"required"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err := app.readJSON(w, r, &input)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters")
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	v := validator.New()
 	v.ValidateStruct(input)
 	if !v.Valid() {
-		respondWithJSON(w, http.StatusUnprocessableEntity, v.Errors)
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
@@ -45,11 +43,11 @@ func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request)
 
 	err = user.Password.Set(input.Password)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error setting password")
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	dbUser, err := cfg.DB.InsertUser(r.Context(), database.InsertUserParams{
+	dbUser, err := app.db.InsertUser(r.Context(), database.InsertUserParams{
 		ID:           user.ID,
 		CreatedAt:    user.CreatedAt,
 		UpdatedAt:    user.UpdatedAt,
@@ -59,16 +57,27 @@ func (cfg *APIConfig) HandlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		Activated:    user.Activated,
 	})
 
-	background(func() {
-		err = cfg.Mailer.Send(user.Email, "user_welcome.tmpl", user)
+	token, err := data.New(r.Context(), dbUser.ID, 3*24*time.Hour, data.ScopeActivation, app.db)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.background(func() {
+
+		data := map[string]any{
+			"activationToken": token.Plaintext,
+			"userID":          dbUser.ID,
+		}
+
+		err = app.mailer.Send(user.Email, "user_welcome.tmpl", data)
 		if err != nil {
-			log.Printf("%v", err)
+			app.logger.Error(err.Error())
 		}
 	})
 
-	respondWithJSON(w, http.StatusOK, data.DatabaseUserToUser(dbUser))
-}
-
-func (cfg *APIConfig) HandlerUsersGet(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJSON(w, http.StatusOK, data.DatabaseUserToUser(user))
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": data.DatabaseUserToUser(dbUser)}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
