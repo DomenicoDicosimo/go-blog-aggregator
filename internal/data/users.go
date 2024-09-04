@@ -1,12 +1,20 @@
 package data
 
 import (
+	"context"
+	"crypto/sha256"
+	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrRecordNotFound = errors.New("record not found")
+	ErrEditConflict   = errors.New("edit conflict")
 )
 
 type User struct {
@@ -33,6 +41,26 @@ func DatabaseUserToUser(dbUser database.User) User {
 		Activated: dbUser.Activated,
 		Version:   dbUser.Version,
 	}
+}
+
+func GetForToken(ctx context.Context, tokenScope, tokenPlaintext string, db *database.Queries) (User, error) {
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+
+	dbUser, err := db.GetForToken(ctx, database.GetForTokenParams{
+		Hash:   tokenHash[:],
+		Scope:  tokenScope,
+		Expiry: time.Now(),
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return User{}, ErrRecordNotFound
+		default:
+			return User{}, err
+		}
+	}
+
+	return DatabaseUserToUser(dbUser), nil
 }
 
 type password struct {

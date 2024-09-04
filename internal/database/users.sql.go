@@ -12,6 +12,38 @@ import (
 	"github.com/google/uuid"
 )
 
+const getForToken = `-- name: GetForToken :one
+ SELECT users.id, users.created_at, users.updated_at, users.name, users.email, users.password_hash, users.activated, users.version
+        FROM users
+        INNER JOIN tokens
+        ON users.id = tokens.user_id
+        WHERE tokens.hash = $1
+        AND tokens.scope = $2 
+        AND tokens.expiry > $3
+`
+
+type GetForTokenParams struct {
+	Hash   []byte
+	Scope  string
+	Expiry time.Time
+}
+
+func (q *Queries) GetForToken(ctx context.Context, arg GetForTokenParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, getForToken, arg.Hash, arg.Scope, arg.Expiry)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.Activated,
+		&i.Version,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, created_at, updated_at, name, email, password_hash, activated, version
 FROM users
@@ -83,7 +115,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :one
+const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET name = $2,
     email = $3,
@@ -92,7 +124,6 @@ SET name = $2,
     updated_at = $6,
     version = version + 1
 WHERE id = $1 AND version = $7
-RETURNING version
 `
 
 type UpdateUserParams struct {
@@ -105,8 +136,8 @@ type UpdateUserParams struct {
 	Version      int32
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.ID,
 		arg.Name,
 		arg.Email,
@@ -115,7 +146,5 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (int32, 
 		arg.UpdatedAt,
 		arg.Version,
 	)
-	var version int32
-	err := row.Scan(&version)
-	return version, err
+	return err
 }

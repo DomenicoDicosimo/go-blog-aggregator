@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -15,7 +16,7 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 	var input struct {
 		Name     string `json:"name" validate:"required,max=500"`
 		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"-" validate:"required"`
+		Password string `json:"-" validate:"required,"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -77,6 +78,66 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 	})
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": data.DatabaseUserToUser(dbUser)}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) HandlerUserActivate(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		TokenPlaintext string `json:"token" validate:"required,len=26"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	v.ValidateStruct(input)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	user, err := data.GetForToken(r.Context(), data.ScopeActivation, input.TokenPlaintext, app.db)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			v.AddError("token", "invalid or expired activation token")
+			app.failedValidationResponse(w, r, v.Errors)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	user.Activated = true
+
+	err = app.db.UpdateUser(r.Context(), database.UpdateUserParams{
+		ID:           user.ID,
+		Name:         user.Name,
+		Email:        user.Email,
+		PasswordHash: user.GetPasswordHash(),
+		Activated:    user.Activated,
+		UpdatedAt:    time.Now().UTC(),
+		Version:      user.Version,
+	})
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.db.DeleteTokenForUser(r.Context(), database.DeleteTokenForUserParams{
+		Scope:  data.ScopeActivation,
+		UserID: user.ID,
+	})
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
