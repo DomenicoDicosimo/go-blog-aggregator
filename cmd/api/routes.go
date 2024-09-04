@@ -28,5 +28,5 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/posts", app.requireActivatedUser(app.HandlerPostsGet))
 
-	return app.recoverPanic(app.authenticate(router))
+	return app.recoverPanic(app.rateLimit(app.authenticate(router)))
 }
