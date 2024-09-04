@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/validator"
 	"github.com/google/uuid"
 )
 
@@ -33,7 +34,12 @@ func DatabaseTokenToToken(dbToken database.Token) Token {
 	}
 }
 
-func New(ctx context.Context, userID uuid.UUID, ttl time.Duration, scope string, db *database.Queries) (*Token, error) {
+func ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {
+	v.Check(tokenPlaintext != "", "token", "must be provided")
+	v.Check(len(tokenPlaintext) == 26, "token", "must be 26 bytes long")
+}
+
+func NewToken(ctx context.Context, userID uuid.UUID, ttl time.Duration, scope string, db *database.Queries) (*Token, error) {
 	token, err := generateToken(userID, ttl, scope)
 	if err != nil {
 		return nil, err

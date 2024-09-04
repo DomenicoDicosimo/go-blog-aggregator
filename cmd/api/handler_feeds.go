@@ -10,7 +10,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func (app *application) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerFeedsCreate(w http.ResponseWriter, r *http.Request) {
+
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
 
 	var input struct {
 		Name string `json:"name" validate:"required,min=2,max=100"`
@@ -77,4 +83,8 @@ func (app *application) HandlerFeedsGet(w http.ResponseWriter, r *http.Request) 
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"Feeds": data.DatabaseFeedsToFeeds(feeds)}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }

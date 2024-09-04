@@ -8,7 +8,12 @@ import (
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 )
 
-func (app *application) HandlerPostsGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerPostsGet(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
 
 	limitString := r.URL.Query().Get("limit")
 	if limitString == "" {
@@ -28,4 +33,8 @@ func (app *application) HandlerPostsGet(w http.ResponseWriter, r *http.Request, 
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"Posts": data.DatabasePostsToPosts(posts)}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }

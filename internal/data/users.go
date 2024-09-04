@@ -17,6 +17,8 @@ var (
 	ErrEditConflict   = errors.New("edit conflict")
 )
 
+var AnonymousUser = &User{}
+
 type User struct {
 	ID        uuid.UUID `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -41,6 +43,10 @@ func DatabaseUserToUser(dbUser database.User) User {
 		Activated: dbUser.Activated,
 		Version:   dbUser.Version,
 	}
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 func GetForToken(ctx context.Context, tokenScope, tokenPlaintext string, db *database.Queries) (User, error) {

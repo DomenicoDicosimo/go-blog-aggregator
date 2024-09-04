@@ -9,7 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func (app *application) HandlerFeedFollowsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerFeedFollowsCreate(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
+
 	var input struct {
 		FeedID uuid.UUID `json:"feed_id"`
 	}
@@ -39,7 +45,13 @@ func (app *application) HandlerFeedFollowsCreate(w http.ResponseWriter, r *http.
 	}
 }
 
-func (app *application) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.Request) {
+
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
 
 	feedIDString := r.PathValue("feedFollowID")
 	feedID, err := uuid.Parse(feedIDString)
@@ -59,7 +71,13 @@ func (app *application) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.
 	}
 }
 
-func (app *application) HandlerFeedFollowsGet(w http.ResponseWriter, r *http.Request, user database.User) {
+func (app *application) HandlerFeedFollowsGet(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
+
 	feedFollows, err := app.db.GetFeedFollows(r.Context(), user.ID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

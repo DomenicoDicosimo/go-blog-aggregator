@@ -16,7 +16,7 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 	var input struct {
 		Name     string `json:"name" validate:"required,max=500"`
 		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"-" validate:"required,"`
+		Password string `json:"password" validate:"required,min=8,max=72"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -57,8 +57,12 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 		PasswordHash: user.GetPasswordHash(),
 		Activated:    user.Activated,
 	})
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 
-	token, err := data.New(r.Context(), dbUser.ID, 3*24*time.Hour, data.ScopeActivation, app.db)
+	token, err := data.NewToken(r.Context(), dbUser.ID, 3*24*time.Hour, data.ScopeActivation, app.db)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
