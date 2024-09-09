@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const getAllPermissionsForUser = `-- name: GetAllPermissionsForUser :many
@@ -40,4 +41,21 @@ func (q *Queries) GetAllPermissionsForUser(ctx context.Context, id uuid.UUID) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const grantPermissionToUser = `-- name: GrantPermissionToUser :exec
+INSERT INTO users_permissions (user_id, permissions_id)
+SELECT $1::uuid, permissions.id 
+FROM permissions 
+WHERE permissions.code = ANY($2::text[])
+`
+
+type GrantPermissionToUserParams struct {
+	UserID uuid.UUID
+	Codes  []string
+}
+
+func (q *Queries) GrantPermissionToUser(ctx context.Context, arg GrantPermissionToUserParams) error {
+	_, err := q.db.ExecContext(ctx, grantPermissionToUser, arg.UserID, pq.Array(arg.Codes))
+	return err
 }

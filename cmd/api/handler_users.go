@@ -62,6 +62,23 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	defaultPermissions := []string{
+		"feeds:read",
+		"feeds:write",
+		"feed_follows:write",
+		"feed_follows:read",
+		"posts:read",
+	}
+
+	err = app.db.GrantPermissionToUser(r.Context(), database.GrantPermissionToUserParams{
+		UserID: dbUser.ID,
+		Codes:  defaultPermissions,
+	})
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
 	token, err := data.NewToken(r.Context(), dbUser.ID, 3*24*time.Hour, data.ScopeActivation, app.db)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
