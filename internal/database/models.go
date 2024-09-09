@@ -29,6 +29,11 @@ type FeedFollow struct {
 	FeedID    uuid.UUID
 }
 
+type Permission struct {
+	ID   uuid.UUID
+	Code string
+}
+
 type Post struct {
 	ID          uuid.UUID
 	CreatedAt   time.Time
@@ -56,4 +61,9 @@ type User struct {
 	PasswordHash []byte
 	Activated    bool
 	Version      int32
+}
+
+type UsersPermission struct {
+	UserID        uuid.UUID
+	PermissionsID uuid.UUID
 }

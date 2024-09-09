@@ -19,14 +19,14 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/v1/tokens/authentication", app.HandlerAuthenticationTokenCreate)
 
-	router.HandlerFunc(http.MethodPost, "/v1/feeds", app.requireActivatedUser(app.HandlerFeedsCreate))
-	router.HandlerFunc(http.MethodGet, "/v1/feeds", app.requireActivatedUser(app.HandlerFeedsGet))
+	router.HandlerFunc(http.MethodPost, "/v1/feeds", app.requirePermission("feeds:write", app.HandlerFeedsCreate))
+	router.HandlerFunc(http.MethodGet, "/v1/feeds", app.requirePermission("feeds:read", app.HandlerFeedsGet))
 
-	router.HandlerFunc(http.MethodPost, "/v1/feed_follows", app.requireActivatedUser(app.HandlerFeedFollowsCreate))
-	router.HandlerFunc(http.MethodDelete, "/v1/feed_follows/:feedfollowID", app.requireActivatedUser(app.HandlerFeedFollowsDelete))
-	router.HandlerFunc(http.MethodGet, "/v1/feed_follows", app.requireActivatedUser(app.HandlerFeedFollowsGet))
+	router.HandlerFunc(http.MethodPost, "/v1/feed_follows", app.requirePermission("feed_follows:write", app.HandlerFeedFollowsCreate))
+	router.HandlerFunc(http.MethodDelete, "/v1/feed_follows/:feedfollowID", app.requirePermission("feed_follows:write", app.HandlerFeedFollowsDelete))
+	router.HandlerFunc(http.MethodGet, "/v1/feed_follows", app.requirePermission("feed_follows:read", app.HandlerFeedFollowsGet))
 
-	router.HandlerFunc(http.MethodGet, "/v1/posts", app.requireActivatedUser(app.HandlerPostsGet))
+	router.HandlerFunc(http.MethodGet, "/v1/posts", app.requirePermission("posts:read", app.HandlerPostsGet))
 
 	return app.recoverPanic(app.rateLimit(app.authenticate(router)))
 }
