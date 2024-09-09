@@ -56,29 +56,68 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 }
 
 const getPostsForUser = `-- name: GetPostsForUser :many
-
-SELECT posts.id, posts.created_at, posts.updated_at, posts.title, posts.url, posts.description, posts.published_at, posts.feed_id FROM posts
+SELECT count(*) OVER(), posts.id, posts.created_at, posts.updated_at, posts.title, posts.url, posts.description, posts.published_at, posts.feed_id
+FROM posts
 JOIN feed_follows ON feed_follows.feed_id = posts.feed_id
-WHERE feed_follows.user_id = $1
-ORDER BY posts.published_at DESC
-LIMIT $2
+WHERE feed_follows.user_id = $1::uuid
+  AND (to_tsvector('simple', posts.title) @@ plainto_tsquery('simple', $2::text) OR $2::text = '')
+  AND (posts.feed_id = $3::uuid OR $3::uuid = '00000000-0000-0000-0000-000000000000'::uuid)
+ORDER BY 
+  CASE 
+    WHEN $4 = 'id' THEN posts.id END ASC,
+    CASE 
+    WHEN $4 = 'title' THEN posts.title END ASC,
+    CASE 
+    WHEN $4 = 'published_at' THEN posts.published_at END ASC,
+    CASE 
+    WHEN $4 = '-id' THEN posts.id END DESC,
+    CASE 
+    WHEN $4 = '-title' THEN posts.title END DESC,
+    CASE 
+    WHEN $4 = '-published_at' THEN posts.published_at END DESC,
+  posts.id ASC
+  LIMIT $6::integer OFFSET $5::integer
 `
 
 type GetPostsForUserParams struct {
 	UserID uuid.UUID
-	Limit  int32
+	Title  string
+	FeedID uuid.UUID
+	Sort   interface{}
+	Off    int32
+	Lim    int32
 }
 
-func (q *Queries) GetPostsForUser(ctx context.Context, arg GetPostsForUserParams) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, getPostsForUser, arg.UserID, arg.Limit)
+type GetPostsForUserRow struct {
+	Count       int64
+	ID          uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Title       string
+	Url         string
+	Description sql.NullString
+	PublishedAt sql.NullTime
+	FeedID      uuid.UUID
+}
+
+func (q *Queries) GetPostsForUser(ctx context.Context, arg GetPostsForUserParams) ([]GetPostsForUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsForUser,
+		arg.UserID,
+		arg.Title,
+		arg.FeedID,
+		arg.Sort,
+		arg.Off,
+		arg.Lim,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Post
+	var items []GetPostsForUserRow
 	for rows.Next() {
-		var i Post
+		var i GetPostsForUserRow
 		if err := rows.Scan(
+			&i.Count,
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,

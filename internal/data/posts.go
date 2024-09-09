@@ -17,9 +17,10 @@ type Post struct {
 	Description *string    `json:"description"`
 	PublishedAt *time.Time `json:"published_at"`
 	FeedID      uuid.UUID  `json:"feedid"`
+	TotalCount  int64
 }
 
-func DatabasePostToPost(post database.Post) Post {
+func DatabasePostToPost(post database.GetPostsForUserRow) Post {
 	return Post{
 		ID:          post.ID,
 		CreatedAt:   post.CreatedAt,
@@ -32,7 +33,7 @@ func DatabasePostToPost(post database.Post) Post {
 	}
 }
 
-func DatabasePostsToPosts(posts []database.Post) []Post {
+func DatabasePostsToPosts(posts []database.GetPostsForUserRow) []Post {
 	result := make([]Post, len(posts))
 	for i, post := range posts {
 		result[i] = DatabasePostToPost(post)

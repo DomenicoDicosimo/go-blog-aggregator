@@ -52,6 +52,15 @@ func (v *Validator) ValidateStruct(s interface{}) {
 	}
 }
 
+func PermittedValue[T comparable](value T, permittedValues ...T) bool {
+	for i := range permittedValues {
+		if value == permittedValues[i] {
+			return true
+		}
+	}
+	return false
+}
+
 // Custom validation function for email
 func validateEmail(fl validator.FieldLevel) bool {
 	return EmailRX.MatchString(fl.Field().String())

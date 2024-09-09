@@ -47,6 +47,10 @@ func main() {
 	if port == "" {
 		log.Fatal("PORT environment variable is not set")
 	}
+	cfg.port, err = strconv.Atoi(port)
+	if err != nil {
+		log.Fatal("Invalid PORT: ", err)
+	}
 
 	dbURL := os.Getenv("DB")
 	if dbURL == "" {
@@ -122,15 +126,15 @@ func main() {
 		logger: logger,
 	}
 
-	err = app.serve()
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-
 	const (
 		collectionConcurrency = 10
 		collectionInterval    = time.Minute
 	)
 	go scraper.StartScraping(dbQueries, collectionConcurrency, collectionInterval)
+
+	err = app.serve()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 }
