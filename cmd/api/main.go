@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"expvar"
 	"log"
 	"log/slog"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -16,6 +18,10 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+)
+
+const (
+	version = "1.0.0"
 )
 
 type config struct {
@@ -125,6 +131,20 @@ func main() {
 	defer db.Close()
 
 	dbQueries := database.New(db)
+
+	expvar.NewString("version").Set(version)
+
+	expvar.Publish("goroutines", expvar.Func(func() any {
+		return runtime.NumGoroutine()
+	}))
+
+	expvar.Publish("database", expvar.Func(func() any {
+		return db.Stats()
+	}))
+
+	expvar.Publish("timestamp", expvar.Func(func() any {
+		return time.Now().Unix()
+	}))
 
 	app := &application{
 		config: cfg,
