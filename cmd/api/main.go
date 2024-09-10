@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,6 +25,10 @@ type config struct {
 		enabled bool
 		rps     float64
 		burst   int
+	}
+
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -109,6 +114,8 @@ func main() {
 	}
 
 	mailerClient := mailer.New(mailerHost, mailerPort, mailerUsername, mailerPassword, mailerSender)
+
+	cfg.cors.trustedOrigins = strings.Fields(os.Getenv("Trusted_Origins"))
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {

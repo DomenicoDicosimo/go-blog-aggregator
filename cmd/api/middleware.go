@@ -173,27 +173,31 @@ func (app *application) requirePermission(code string, next http.HandlerFunc) ht
 	return app.requireActivatedUser(fn)
 }
 
-/*
-type authedHandler func(http.ResponseWriter, *http.Request, database.User)
+func (app *application) enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Origin")
 
-func (cfg *APIConfig) MiddlewareAuth(handler authedHandler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Extract API key
-		apiKey, err := auth.GetBearerToken(r.Header)
-		if err != nil {
-			respondWithError(w, http.StatusUnauthorized, "Couldn't find apikey")
-			return
+		w.Header().Add("Vary", "Access-Control-Request-Method")
+
+		origin := r.Header.Get("Origin")
+
+		if origin != "" {
+			for i := range app.config.cors.trustedOrigins {
+				if origin == app.config.cors.trustedOrigins[i] {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+
+					if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+						w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
+						w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+
+						w.WriteHeader(http.StatusOK)
+						return
+					}
+					break
+				}
+			}
 		}
 
-		// Verify API key and fetch user
-		user, err := cfg.DB.GetUserByApiKey(r.Context(), apiKey)
-		if err != nil {
-			respondWithError(w, http.StatusUnauthorized, "Couldn't find user")
-			return
-		}
-
-		// Call the next handler with the user
-		handler(w, r, user)
-	}
+		next.ServeHTTP(w, r)
+	})
 }
-*/
