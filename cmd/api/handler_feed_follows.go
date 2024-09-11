@@ -53,10 +53,10 @@ func (app *application) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.
 		return
 	}
 
-	feedIDString := r.PathValue("feedFollowID")
-	feedID, err := uuid.Parse(feedIDString)
+	feedID, err := app.readFeedFollowIDParam(r)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.notFoundResponse(w, r)
+		return
 	}
 
 	err = app.db.DeleteFeedFollow(r.Context(), feedID)
@@ -68,6 +68,7 @@ func (app *application) HandlerFeedFollowsDelete(w http.ResponseWriter, r *http.
 	err = app.writeJSON(w, http.StatusOK, envelope{"messege": "Feed follow deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 }
 
@@ -81,10 +82,12 @@ func (app *application) HandlerFeedFollowsGet(w http.ResponseWriter, r *http.Req
 	feedFollows, err := app.db.GetFeedFollows(r.Context(), user.ID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"feed follows": data.DatabaseFeedFollowsToFeedFollows(feedFollows)}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 }

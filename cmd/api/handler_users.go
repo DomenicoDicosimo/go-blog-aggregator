@@ -62,17 +62,9 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	defaultPermissions := []string{
-		"feeds:read",
-		"feeds:write",
-		"feed_follows:write",
-		"feed_follows:read",
-		"posts:read",
-	}
-
 	err = app.db.GrantPermissionToUser(r.Context(), database.GrantPermissionToUserParams{
 		UserID: dbUser.ID,
-		Codes:  defaultPermissions,
+		Codes:  []string{"feeds:read", "feeds:write", "feed_follows:write", "feed_follows:read", "posts:read"},
 	})
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -86,7 +78,6 @@ func (app *application) HandlerUsersCreate(w http.ResponseWriter, r *http.Reques
 	}
 
 	app.background(func() {
-
 		data := map[string]any{
 			"activationToken": token.Plaintext,
 			"userID":          dbUser.ID,

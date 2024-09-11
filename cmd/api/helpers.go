@@ -12,6 +12,8 @@ import (
 	"strings"
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/validator"
+	"github.com/google/uuid"
+	"github.com/julienschmidt/httprouter"
 )
 
 type envelope map[string]any
@@ -124,6 +126,17 @@ func (app *application) readInt(qs url.Values, key string, defaultValue int, v *
 	}
 
 	return i
+}
+
+func (app *application) readFeedFollowIDParam(r *http.Request) (uuid.UUID, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := uuid.Parse(params.ByName("feedfollowID"))
+	if err != nil {
+		return uuid.UUID{}, errors.New("invalid id parameter")
+	}
+
+	return id, nil
 }
 
 func (app *application) background(fn func()) {
