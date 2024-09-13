@@ -15,13 +15,14 @@ import (
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/mailer"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/pkg/scraper"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/vcs"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-const (
-	version = "1.0.0"
+var (
+	version = vcs.Version()
 )
 
 type config struct {
