@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +23,6 @@ import (
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/mailer"
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 	smtpmock "github.com/mocktools/go-smtp-mock/v2"
 	"github.com/pressly/goose/v3"
 	"github.com/stretchr/testify/suite"
@@ -62,10 +60,6 @@ type MailtrapEmail struct {
 
 func (suite *APITestSuite) SetupSuite() {
 	suite.ctx = context.Background()
-
-	// Load .env file
-	err := godotenv.Load(".env")
-	suite.Require().NoError(err)
 
 	// Setup PostgreSQL container
 	pgContainer, err := postgres.Run(
@@ -495,7 +489,7 @@ func (suite *APITestSuite) TestFeedFollows() {
 	defer resp.Body.Close()
 
 	// Log the response body for debugging
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	suite.T().Logf("Delete feed follow response: %s", string(body))
 
 	suite.Require().Equal(http.StatusOK, resp.StatusCode, "Failed to delete feed follow")
@@ -563,7 +557,7 @@ func (suite *APITestSuite) TestFeedFollows() {
 	defer resp.Body.Close()
 
 	// Log the response body for debugging
-	body, _ = ioutil.ReadAll(resp.Body)
+	body, _ = io.ReadAll(resp.Body)
 	suite.T().Logf("Delete feed follow response: %s", string(body))
 
 	suite.Require().Equal(http.StatusOK, resp.StatusCode, "Failed to delete feed follow")
