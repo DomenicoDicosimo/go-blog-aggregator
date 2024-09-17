@@ -51,7 +51,11 @@ func main() {
 	var cfg config
 	var err error
 
-	godotenv.Load(".env")
+	cfg.env = os.Getenv("ENV")
+	if cfg.env == "" {
+		cfg.env = "development"
+		godotenv.Load(".env")
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
@@ -122,7 +126,7 @@ func main() {
 
 	mailerClient := mailer.New(mailerHost, mailerPort, mailerUsername, mailerPassword, mailerSender)
 
-	cfg.cors.trustedOrigins = strings.Fields(os.Getenv("Trusted_Origins"))
+	cfg.cors.trustedOrigins = strings.Fields(os.Getenv("TRUSTED_ORIGINS"))
 
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {

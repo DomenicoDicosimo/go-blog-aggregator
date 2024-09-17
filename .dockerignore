@@ -3,3 +3,5 @@
 *.md
 Dockerfile*
 docker-compose.yml
+README.md
+.env

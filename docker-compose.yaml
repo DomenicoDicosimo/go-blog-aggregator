@@ -3,26 +3,36 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /app
     ports:
-      - "8080:8080"
+      - "${PORT}:${PORT}"
     depends_on:
       db:
         condition: service_healthy
     environment:
-      - PORT=8080
-      - DB=postgres://postgres:postgres@db:5432/blogaggregator?sslmode=disable
+      - PORT=${PORT}
+      - DB=${DB}
+      - LIMITER_ENABLED=${LIMITER_ENABLED}
+      - LIMITER_RPS=${LIMITER_RPS}
+      - LIMITER_BURST=${LIMITER_BURST}
+      - MAILER_HOST=${MAILER_HOST}
+      - MAILER_PORT=${MAILER_PORT}
+      - MAILER_USERNAME=${MAILER_USERNAME}
+      - MAILER_PASSWORD=${MAILER_PASSWORD}
+      - MAILER_SENDER=${MAILER_SENDER}
+      - TRUSTED_ORIGINS=${TRUSTED_ORIGINS}
+    env_file:
+      - .env
 
   db:
     image: postgres:14-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=blogaggregator
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -30,10 +40,10 @@ services:
   psql:
     image: postgres:14-alpine
     environment:
-      - PGPASSWORD=postgres
+      - PGPASSWORD=${POSTGRES_PASSWORD}
     depends_on:
       - db
-    command: psql -h db -U postgres -d blogaggregator
+    command: psql -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 
 volumes:
   postgres_data:

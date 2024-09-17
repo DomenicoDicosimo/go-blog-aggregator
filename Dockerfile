@@ -2,19 +2,24 @@ FROM golang:1.22-alpine
 
 WORKDIR /app
 
-# Install Goose and PostgreSQL client
-RUN apk add --no-cache postgresql-client && \
-    go install github.com/pressly/goose/v3/cmd/goose@latest
+# Install PostgreSQL client and build dependencies
+RUN apk add --no-cache postgresql-client gcc musl-dev
 
+# Install Goose
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
+# Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy the rest of the application
 COPY . .
 
 # Build the application
-RUN go build -o main ./cmd/api
+RUN go build -o bin/api ./cmd/api
 
-# Run the migration script
-RUN chmod +x /app/scripts/run-migrations.sh
+# Expose the application port
+EXPOSE 8080
 
-CMD ["/bin/sh", "-c", "./scripts/run-migrations.sh && ./main"]
+# Command to run the application
+CMD ["./bin/api"]
