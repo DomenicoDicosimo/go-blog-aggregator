@@ -53,8 +53,8 @@ func (app *application) HandlerPostsGet(w http.ResponseWriter, r *http.Request) 
 		Title:  input.Title,
 		FeedID: input.FeedID,
 		Sort:   input.Filters.Sort,
-		Lim:    int32(input.Filters.Limit()),
-		Off:    int32(input.Filters.Offset()),
+		Lim:    int32(input.Filters.Limit()),  //#nosec G115
+		Off:    int32(input.Filters.Offset()), //#nosec G115
 	})
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
