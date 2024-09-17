@@ -42,7 +42,9 @@ func main() {
 	log.Printf("starting server on %s", *addr)
 	// Start a HTTP server listening on the given address, which responds to all
 	// requests with the webpage HTML above.
+	// Ignoring G114: This is a simple CORS test server and doesn't need timeout configuration
 	err := http.ListenAndServe(*addr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//#nosec G114 G104
 		w.Write([]byte(html))
 	}))
 	log.Fatal(err)

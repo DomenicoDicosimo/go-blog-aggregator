@@ -54,7 +54,10 @@ func main() {
 	cfg.env = os.Getenv("ENV")
 	if cfg.env == "" {
 		cfg.env = "development"
-		godotenv.Load(".env")
+		err = godotenv.Load(".env")
+		if err != nil {
+			log.Fatal(".env file not present in dev environment")
+		}
 	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))

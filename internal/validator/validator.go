@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"log"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -15,8 +16,10 @@ var validate *validator.Validate
 func init() {
 	validate = validator.New()
 
-	// Register custom validation for email
-	validate.RegisterValidation("email", validateEmail)
+	err := validate.RegisterValidation("email", validateEmail)
+	if err != nil {
+		log.Printf("Failed to register email validation: %v", err)
+	}
 }
 
 type Validator struct {

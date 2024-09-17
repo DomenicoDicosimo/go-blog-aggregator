@@ -48,7 +48,9 @@ func main() {
 	addr := flag.String("addr", ":9000", "Server address")
 	flag.Parse()
 	log.Printf("starting server on %s", *addr)
+
 	err := http.ListenAndServe(*addr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//#nosec G114 G104
 		w.Write([]byte(html))
 	}))
 	log.Fatal(err)
