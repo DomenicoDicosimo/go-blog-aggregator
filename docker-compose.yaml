@@ -9,6 +9,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      - ENV=${ENV}
       - PORT=${PORT}
       - DB=${DB}
       - LIMITER_ENABLED=${LIMITER_ENABLED}
