@@ -110,13 +110,17 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
+            # Debug: Print environment variables
+            echo "MAILER_SENDER=${{ secrets.MAILER_SENDER }}"
+            echo "MAILER_USERNAME=${{ secrets.MAILER_USERNAME }}"
+            
             # Pull the latest image
             docker pull ${{ env.IMAGE_NAME }}:main
             
             # Stop the running container
             docker stop go-blog-agg || true
             docker rm go-blog-agg || true
-         
+          
             # Run the new container
             docker run -d --name go-blog-agg \
               -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
