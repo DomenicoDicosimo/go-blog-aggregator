@@ -118,7 +118,9 @@ func main() {
 	if mailerPassword == "" {
 		log.Fatal("MAILER_PASSWORD environment variable is not set")
 	}
+
 	mailerSender := os.Getenv("MAILER_SENDER")
+	logger.Debug(mailerSender)
 	if mailerSender == "" {
 		log.Fatal("MAILER_SENDER environment variable is not set")
 	}

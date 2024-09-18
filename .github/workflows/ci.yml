@@ -112,6 +112,9 @@ jobs:
           script: |
             # Escape special characters in MAILER_SENDER
             MAILER_SENDER_ESCAPED=$(printf '%q' "${{ secrets.MAILER_SENDER }}")
+
+            # Output the escaped MAILER_SENDER for debugging
+            echo "Escaped MAILER_SENDER: $MAILER_SENDER_ESCAPED"
             
             # Pull the latest image
             docker pull ${{ env.IMAGE_NAME }}:main
