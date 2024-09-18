@@ -100,6 +100,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
+      - name: Convert IMAGE_NAME to lowercase
+        run: echo "IMAGE_NAME=$(echo ${{ env.REGISTRY }}/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Deploy to Digital Ocean droplet
         uses: appleboy/ssh-action@master
         with:
@@ -108,7 +111,7 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
             # Pull the latest image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+            docker pull ${{ env.IMAGE_NAME }}:main
             
             # Stop the running container
             docker stop go-blog-agg || true
@@ -128,4 +131,4 @@ jobs:
               -e LIMITER_RPS=${{ secrets.LIMITER_RPS }} \
               -e LIMITER_BURST=${{ secrets.LIMITER_BURST }} \
               -e TRUSTED_ORIGINS="${{ secrets.TRUSTED_ORIGINS }}" \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+              ${{ env.IMAGE_NAME }}:main
