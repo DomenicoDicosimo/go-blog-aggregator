@@ -48,8 +48,10 @@ type application struct {
 }
 
 func main() {
-	var cfg config
-	var err error
+	var (
+		cfg config
+		err error
+	)
 
 	cfg.env = os.Getenv("ENV")
 	if cfg.env == "" {
@@ -119,11 +121,11 @@ func main() {
 		log.Fatal("MAILER_PASSWORD environment variable is not set")
 	}
 
-	mailerSender := os.Getenv("MAILER_SENDER")
-	logger.Debug(mailerSender)
-	if mailerSender == "" {
-		log.Fatal("MAILER_SENDER environment variable is not set")
+	mailerSender, err := getMailerSender(cfg.env)
+	if err != nil {
+		log.Fatal(err)
 	}
+
 	mailerPort, err := strconv.Atoi(mailerPortStr)
 	if err != nil {
 		log.Fatal("Invalid MAILER_PORT: ", err)

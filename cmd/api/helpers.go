@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -153,4 +155,23 @@ func (app *application) background(fn func()) {
 
 		fn()
 	}()
+}
+
+func getMailerSender(environment string) (string, error) {
+	if environment == "development" {
+		mailerSender := os.Getenv("MAILER_SENDER")
+		if mailerSender == "" {
+			return "", errors.New("MAILER_SENDER environment variable is not set")
+		}
+		return mailerSender, nil
+	}
+	mailerSender := os.Getenv("MAILER_SENDER")
+	if mailerSender == "" {
+		return "", errors.New("MAILER_SENDER environment variable is not set")
+	}
+	decodedMailerSender, err := base64.StdEncoding.DecodeString(mailerSender)
+	if err != nil {
+		return "", errors.New("trouble Decoding MAILER_SENDER")
+	}
+	return string(decodedMailerSender), nil
 }
