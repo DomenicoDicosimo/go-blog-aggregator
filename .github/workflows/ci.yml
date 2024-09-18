@@ -116,19 +116,19 @@ jobs:
             # Stop the running container
             docker stop go-blog-agg || true
             docker rm go-blog-agg || true
-            
+         
             # Run the new container
             docker run -d --name go-blog-agg \
               -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
-              -e PORT=${{ secrets.PORT }} \
+              -e PORT="${{ secrets.PORT }}" \
               -e DB="${{ secrets.DB }}" \
-              -e MAILER_HOST=${{ secrets.MAILER_HOST }} \
-              -e MAILER_PORT=${{ secrets.MAILER_PORT }} \
-              -e MAILER_USERNAME=${{ secrets.MAILER_USERNAME }} \
-              -e MAILER_PASSWORD=${{ secrets.MAILER_PASSWORD }} \
+              -e MAILER_HOST="${{ secrets.MAILER_HOST }}" \
+              -e MAILER_PORT="${{ secrets.MAILER_PORT }}" \
+              -e MAILER_USERNAME="${{ secrets.MAILER_USERNAME }}" \
+              -e MAILER_PASSWORD="${{ secrets.MAILER_PASSWORD }}" \
               -e MAILER_SENDER="${{ secrets.MAILER_SENDER }}" \
-              -e LIMITER_ENABLED=${{ secrets.LIMITER_ENABLED }} \
-              -e LIMITER_RPS=${{ secrets.LIMITER_RPS }} \
-              -e LIMITER_BURST=${{ secrets.LIMITER_BURST }} \
+              -e LIMITER_ENABLED="${{ secrets.LIMITER_ENABLED }}" \
+              -e LIMITER_RPS="${{ secrets.LIMITER_RPS }}" \
+              -e LIMITER_BURST="${{ secrets.LIMITER_BURST }}" \
               -e TRUSTED_ORIGINS="${{ secrets.TRUSTED_ORIGINS }}" \
               ${{ env.IMAGE_NAME }}:main
