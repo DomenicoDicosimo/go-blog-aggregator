@@ -130,7 +130,7 @@ jobs:
               -e MAILER_PORT="${{ secrets.MAILER_PORT }}" \
               -e MAILER_USERNAME="${{ secrets.MAILER_USERNAME }}" \
               -e MAILER_PASSWORD="${{ secrets.MAILER_PASSWORD }}" \
-              -e MAILER_SENDER="$MAILER_SENDER_ESCAPED" \
+              -e MAILER_SENDER=$MAILER_SENDER_ESCAPED \
               -e LIMITER_ENABLED="${{ secrets.LIMITER_ENABLED }}" \
               -e LIMITER_RPS="${{ secrets.LIMITER_RPS }}" \
               -e LIMITER_BURST="${{ secrets.LIMITER_BURST }}" \
