@@ -123,6 +123,7 @@ jobs:
             # Run the new container with the escaped MAILER_SENDER
             docker run -d --name go-blog-agg \
               -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
+              -e ENV="${{ secrets.ENV }}" \
               -e PORT="${{ secrets.PORT }}" \
               -e DB="${{ secrets.DB }}" \
               -e MAILER_HOST="${{ secrets.MAILER_HOST }}" \
