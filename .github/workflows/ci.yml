@@ -128,7 +128,7 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           source: "docker-compose.yml,.env"
-          target: "~/home/gobloggagg/go-blog-aggregator/"
+          target: "/home/gobloggagg/go-blog-aggregator/"
 
       - name: Deploy to Digital Ocean droplet
         uses: appleboy/ssh-action@master
@@ -137,7 +137,7 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
-            cd ~/home/gobloggagg/go-blog-aggregator/
+            cd /home/gobloggagg/go-blog-aggregator/
             echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> .env
             docker-compose pull
             # Run Goose migrations
