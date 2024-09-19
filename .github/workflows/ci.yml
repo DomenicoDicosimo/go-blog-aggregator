@@ -121,6 +121,13 @@ jobs:
           echo "LIMITER_BURST=${{ secrets.LIMITER_BURST }}" >> .env
           echo "TRUSTED_ORIGINS=${{ secrets.TRUSTED_ORIGINS }}" >> .env
 
+      - name: Debug information
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
+          echo "Content of .env file:"
+          cat .env
+          
       - name: Copy files to Digital Ocean
         uses: appleboy/scp-action@master
         with:
