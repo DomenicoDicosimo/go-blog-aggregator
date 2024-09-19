@@ -104,3 +104,22 @@ ci/lint:
 	test -z "$$(go fmt ./...)"
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	staticcheck ./...
+
+# ==================================================================================== #
+# PRODUCTION
+# ==================================================================================== #
+
+## production/connect: connect to the production server
+.PHONY: production/connect
+production/connect:
+	ssh gobloggagg@${PRODUCTION_HOST_IP}
+
+## production/service: Setup API Service
+.PHONY: production/service
+production/service:
+	rsync -P ./remote/production/api.service gobloggagg@${PRODUCTION_HOST_IP}:~
+	ssh -t gobloggagg@${PRODUCTION_HOST_IP} '\
+		sudo mv ~/api.service /etc/systemd/system/ \
+		&& sudo systemctl enable api \
+		&& sudo systemctl restart api \
+		'

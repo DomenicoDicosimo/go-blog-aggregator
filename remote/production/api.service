@@ -1,0 +1,24 @@
+[Unit]
+Description=Go Blog Aggregator
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+WorkingDirectory=/home/gobloggagg/go-blog-aggregator
+ExecStart=/usr/local/bin/docker-compose up -d
+ExecStop=/usr/local/bin/docker-compose down
+TimeoutStartSec=0
+
+# Run as gobloggagg user
+User=gobloggagg
+Group=gobloggagg
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
