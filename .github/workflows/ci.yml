@@ -140,6 +140,10 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
             cd /home/gobloggagg/go-blog-aggregator/
+            echo "Current directory: $(pwd)"
+            echo "Contents of current directory:"
+            echo "DB=${{ secrets.POSTGRES_DB }}"
+            ls -la
             echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> .env
             docker-compose pull
             # Run Goose migrations
