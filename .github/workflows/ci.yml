@@ -147,24 +147,10 @@ jobs:
 
             docker-compose up -d db
 
-            # Wait for the database to be ready
-            echo "Waiting for database to be ready..."
-            for i in {1..30}; do
-              if docker-compose exec db pg_isready -h localhost -U postgres; then
-                echo "Database is ready!"
-                break
-              fi
-              echo "Waiting for database... attempt $i"
-              sleep 5
-            done
+            sleep 10
 
-            # Print the connection string (excluding password)
-            echo "Database connection string (excluding password):"
-            docker-compose run --rm app bash -c 'echo $DB | sed "s/:[^:]*@/:***@/"'
+            docker-compose run --rm app ls -l /app/sql/schema
 
-            # Run migrations
             docker-compose run --rm app goose -dir ./sql/schema postgres "$DB" up
 
             docker-compose up -d
-
-            echo "Deployment completed"
