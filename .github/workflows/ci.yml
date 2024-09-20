@@ -149,9 +149,6 @@ jobs:
 
             sleep 10
 
-            docker-compose run --rm app ls -l /app/sql/schema
-
-            docker-compose echo "$DB"
-            docker-compose run --rm app goose -dir ./sql/schema postgres "$DB" up
+            docker-compose run --rm app goose -dir ./sql/schema postgres ${{ secrets.DB }} up
 
             docker-compose up -d
