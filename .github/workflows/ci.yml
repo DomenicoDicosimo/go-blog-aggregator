@@ -129,7 +129,7 @@ jobs:
           host: ${{ secrets.DROPLET_IP }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
-          source: "docker-compose.yaml,Dockerfile,.env"
+          source: "docker-compose.yaml,Dockerfile,.env,go.mod,go.sum"
           target: "/home/gobloggagg/go-blog-aggregator/"
 
       - name: Deploy to Digital Ocean droplet
