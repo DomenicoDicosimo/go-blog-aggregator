@@ -25,7 +25,7 @@ RUN pwd
 RUN go build -o bin/api ./cmd/api
 
 # Expose the application port
-EXPOSE 8080
+EXPOSE 4000
 
 # Command to run the application
 CMD ["./bin/api"]

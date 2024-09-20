@@ -38,13 +38,5 @@ services:
       timeout: 5s
       retries: 5
 
-  psql:
-    image: postgres:14-alpine
-    environment:
-      - PGPASSWORD=${POSTGRES_PASSWORD}
-    depends_on:
-      - db
-    command: psql -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB}
-
 volumes:
   postgres_data:
