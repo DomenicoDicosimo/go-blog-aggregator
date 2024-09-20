@@ -53,13 +53,17 @@ func main() {
 		err error
 	)
 
-	err = godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(".env file not present")
-	}
 	cfg.env = os.Getenv("ENV")
 	if cfg.env == "" {
-		log.Fatal("DB environment variable is not set")
+		cfg.env = "development"
+	}
+
+	// Load .env file only in development
+	if cfg.env == "development" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading .env file in development environment")
+		}
 	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
