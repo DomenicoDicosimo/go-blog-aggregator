@@ -129,7 +129,7 @@ jobs:
           host: ${{ secrets.DROPLET_IP }}
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
-          source: "docker-compose.yaml,Dockerfile,.env,go.mod,go.sum"
+          source: "."
           target: "/home/gobloggagg/go-blog-aggregator/"
 
       - name: Deploy to Digital Ocean droplet
@@ -142,8 +142,6 @@ jobs:
             cd /home/gobloggagg/go-blog-aggregator/
             echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> .env
             docker-compose pull
-
-            docker-compose build
 
             docker-compose down
 
