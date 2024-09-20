@@ -151,7 +151,7 @@ jobs:
 
             docker-compose run --rm app ls -l /app/sql/schema
 
-            echo "$DB"
+            docker-compose echo "$DB"
             docker-compose run --rm app goose -dir ./sql/schema postgres "$DB" up
 
             docker-compose up -d
