@@ -14,7 +14,7 @@ import (
 
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/database"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/mailer"
-	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/pkg/scraper"
+	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/scraper"
 	"github.com/DomenicoDicosimo/go-blog-aggregator/internal/vcs"
 
 	"github.com/joho/godotenv"
