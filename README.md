@@ -1,74 +1,127 @@
 # Go Blog Aggregator
 
-This project is a blog aggregator built with Go. It uses Docker for development and PostgreSQL for the database.
+A robust RSS feed aggregator built with Go, featuring user authentication, feed management, and post collection.
 
-## Prerequisites
+## Table of Contents
+- [Description](#description)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-- Docker
-- Docker Compose
+## Description
+
+Bloggo is a powerful RSS feed aggregator service that allows users to manage and follow their favorite blog feeds. It automatically collects and stores posts from followed feeds, providing a centralized platform for users to stay updated with their preferred content.
+
+## Features
+
+- ✅ User registration and authentication
+- 📊 Feed management (create, read, follow, unfollow)
+- 🔄 Automatic post collection from feeds
+- 🌐 RESTful API for interacting with feeds and posts
+- 🛡️ Rate limiting and CORS support
+- 📦 Database migrations using Goose
+- 🐳 Dockerized application for easy deployment
+- 🚀 Continuous Integration/Continuous Deployment (CI/CD) pipeline
+
+## Technology Stack
+
+- 🖥️ Go 1.22
+- 🐘 PostgreSQL 14
+- 🐳 Docker & Docker Compose
+- 🔧 GitHub Actions (CI/CD)
+- 📚 Various Go packages including:
+  - `github.com/lib/pq` for PostgreSQL driver
+  - `github.com/joho/godotenv` for environment variable management
+  - `github.com/julienschmidt/httprouter` for HTTP routing
+  - `golang.org/x/crypto` for password hashing
+  - `github.com/go-mail/mail/v2` for email sending
 
 ## Getting Started
 
-## Environment Setup
+### Prerequisites
 
-Create a `.env` file in the root directory with the following variables:
-PORT=8080
-DB=postgres://postgres:postgres@db:5432/blogaggregator?sslmode=disable
+- Go 1.22 or later
+- Docker and Docker Compose
+- PostgreSQL 14 (if running locally without Docker)
 
-### Development Environment
+### Installation
 
-To start the development environment:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/go-blog-aggregator.git
+   cd go-blog-aggregator
 
-1. Build and start the containers:
+2. Create a .env file in the root directory and add the necessary environment variables:
+    ```bash
+    PORT=8080
+    DB=postgres://postgres:postgres@db:5432/blogaggregator?sslmode=disable
+    MAILER_HOST=your_smtp_host
+    MAILER_PORT=your_smtp_port
+    MAILER_USERNAME=your_smtp_username
+    MAILER_PASSWORD=your_smtp_password
+    MAILER_SENDER=your_sender_email
+    LIMITER_ENABLED=true
+    LIMITER_RPS=2
+    LIMITER_BURST=4
+    TRUSTED_ORIGINS=
+    ```
 
-./scripts/dev.sh
+3. Build and start the application using Make:
+    ```bash
+    make run
+    ```
 
-This script builds the Docker images and starts the containers defined in `docker-compose.yml`.
+### Usage
 
-2. The application will be available at `http://localhost:8080`.
+Once the application is running, you can interact with it through its RESTful API. Use tools like cURL or Postman to send requests to http://localhost:8080.
 
-### Database Console
+### API Endpoints
 
-To access the PostgreSQL database console:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/v1/healthz` | Healthcheck |
+| POST | `/v1/users` | Create a new user |
+| PUT | `/v1/users/activated` | Activate a user account |
+| POST | `/v1/tokens/authentication` | Create an authentication token |
+| POST | `/v1/feeds` | Create a new feed |
+| GET | `/v1/feeds` | Get all feeds |
+| POST | `/v1/feed_follows` | Follow a feed |
+| DELETE | `/v1/feed_follows/:feedfollowID` | Unfollow a feed |
+| GET | `/v1/feed_follows` | Get all followed feeds |
+| GET | `/v1/posts` | Get posts from followed feeds |
+| GET | `/debug/vars` | Expvar handler (for debugging) |
 
-./scripts/db-console.sh
+### Testing
 
-- Manually run migrations (if needed):
+    ```bash
+    make test
+    ```
 
-./scripts/run-migrations.sh
+### Deployment
 
-### Docker Commands
+The project includes a CI/CD pipeline using GitHub Actions. On push to the main branch, it will:
 
-- Stop and remove containers:
+- 🧪 Run tests
+- 🎨 Check code formatting
+- 🏗️ Build and push a Docker image to GitHub Container Registry
+- 🚀 Deploy to a Digital Ocean droplet
 
-docker-compose down
+For manual deployment, you can use:
+    ```bash
+    make docker-build
+    make docker-run
+    ```
 
+### Contributing
 
-- Stop containers but keep volumes:
-
-docker-compose stop
-
-
-- View container logs:
-
-docker-compose logs
-
-
-- Rebuild Docker images (after changes):
-
-docker-compose build
-
-## Testing
-
-Run tests (uses Testcontainers for a separate PostgreSQL instance):
-go test ./...
-
-## Troubleshooting
-If you encounter permission issues with shell scripts:
-chmod +x scripts/*.sh
-
-If the app can't connect to the database, check container health:
-docker-compose ps
-
-To completely reset your database:
-docker-compose down -v
+Contributions are welcome! Please feel free to submit a Pull Request.
+License
+This project is open source and available under the MIT License.
